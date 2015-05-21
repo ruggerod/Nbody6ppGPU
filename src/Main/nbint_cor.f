@@ -14,6 +14,7 @@
       XIDOT(1:3) = XDOT(1:3,I)
 
 *       Include the corrector and set new F, FDOT, D1, D2 & D3.
+      DT = TIME - T0(I)
       DTSQ = DT**2
       DT6 = 6.0/(DT*DTSQ)
       DT2 = 2.0/DTSQ

@@ -102,7 +102,7 @@ absorb.f chaos2.f chdata.f chfind.f chfirr.f chinit.f chlist.f chmod_chain.f \
 chpot.f chterm.f expel2.f fchain.f ghost.f giant2.f kcpert.f \
 reduce.f reinit.f renew.f setsys.f tchain.f xcpred.f xtpert.f \
 xbpredall.f jpred.f jpred_int.f fpoly1_ks.f fpoly2_ks.f cmfirr_cor.f cmfirr_ucor.f \
-kcpert_cor.f ksparmpi.f remove_ks.f nbint_cor.f string_left.f \
+kcpert_cor.f ksparmpi.f remove_ks.f nbint_cor.f nbint_extra.f string_left.f \
 sort_tlist.f next_tlist.f shrink_tlist.f repair_tlist.f remove_tlist.f \
 add_tlist.f exchange_tlist.f replace_tlist.f delay_store_tlist.f \
 delay_add_tlist.f delay_remove_tlist.f rmesc_tlist.f shift_tlist.f k_step.f \

@@ -31,7 +31,7 @@
 #ifdef PARALLEL
       integer inum(maxpe),ista(maxpe),NXTLST_MPI(NMAX+500),NPIECE
       integer istart_lst,iend_lst
-      REAL*8 XMPI(20,NMAX),YMPI(41,NMAX)
+      REAL*8 YMPI(41,NMAX)
       SAVE NPIECE
       INTEGER IMPI(LMAX,NMAX),JMPI(11), JMPILOCAL(11,maxpe)
 #endif
@@ -538,6 +538,33 @@ C     if (TCCT.gt.2.0) stop
          END DO
 !$omp end parallel do
 
+!$omp parallel do if(NXTLEN.GE.ITHREAD) private(L,I,DTR)
+         DO L = 1,NXTLEN
+            I = NXTLST(L)
+            X0(1:3,I) = XN(1:3,I)
+c$$$            X(1:3,I) = XN(1:3,I)
+            X0DOT(1:3,I) = XNDOT(1:3,I)
+c$$$            XDOT(1:3,I) = XNDOT(1:3,I)
+            D0(1:3,I) = FI(1:3,I)
+            D1(1:3,I) = FIDOT(1:3,I)
+            IMINR(I) = IMINR_TMP(L)
+*     Save new block step and update T0 & next time
+            T0(I) = TIME
+            TIMENW(I) = T0(I) + STEP(I)
+*     Set non-zero indicator for new regular force.
+            IF (T0R(I) + STEPR(I).GT.TIME) THEN
+*     Extrapolate regular force & first derivatives to obtain F & FDOT.
+              DTR = TIME - T0R(I)
+              F(1,I) = 0.5*(FRDOT(1,I)*DTR + FR(1,I) + FI(1,I))
+              F(2,I) = 0.5*(FRDOT(2,I)*DTR + FR(2,I) + FI(2,I))
+              F(3,I) = 0.5*(FRDOT(3,I)*DTR + FR(3,I) + FI(3,I))
+              FDOT(1,I) = ONE6*(FRDOT(1,I) + FIDOT(1,I))
+              FDOT(2,I) = ONE6*(FRDOT(2,I) + FIDOT(2,I))
+              FDOT(3,I) = ONE6*(FRDOT(3,I) + FIDOT(3,I))
+           END IF
+         END DO
+!$omp end parallel do
+
          call cputim(tt3)
          ttirr = ttirr + (tt3-ttnb1)*60.
 *     
@@ -615,13 +642,13 @@ c$$$  ttbarnb = ttbarnb + (tt999-tt998)*60
 #ifdef SIMD
 *     Use AVX/SSE to calculate irregular force and fdot
          call IRR_SIMD_FIRR_VEC(TIME,NPART_LEN,NXTLST_MPI(istart_lst),
-     &        FIRR_SIMD(istart),FD_SIMD(istart),IMINR_TMP(istart))
+     &        FIRR_SIMD(1,istart),FD_SIMD(1,istart),IMINR_TMP(istart))
          call cputim(ttsimdc)
          ttsimdcalc = ttsimdcalc + (ttsimdc-ttnb1)*60.
 #else
 *     OpenMP version of irregular force and fdot
          CALL NBINT(TIME,NPART_LEN,NXTLST_MPI(istart_lst),
-     &        X,XDOT,BODY,FIRR_SIMD(istart),FD_SIMD(istart),
+     &        X,XDOT,BODY,FIRR_SIMD(1,istart),FD_SIMD(1,istart),
      &        LIST,IMINR_TMP(istart))
 #endif
          
@@ -730,7 +757,7 @@ c$$$  ttbarnb = ttbarnb + (tt999-tt998)*60
                CALL NBINT_COR(I,FIRR_SIMD(1,L),FD_SIMD(1,L))
                X0(1:3,I) = XN(1:3,I)
 *     X(1:3,I) = XMPI(1:3,L)
-               X0DOT(1:3,I) = XNDOT(4:6,I)
+               X0DOT(1:3,I) = XNDOT(1:3,I)
 *     XDOT(1:3,I) = XMPI(4:6,L)
                D0(1:3,I) = FI(1:3,I)
                D1(1:3,I) = FIDOT(1:3,I)
