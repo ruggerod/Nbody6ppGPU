@@ -33,12 +33,14 @@
 ***
 *
 *       Base new time scale for changes in radius & mass on stellar type.
-      if(kw.le.1)then
+      if(kw.lt.0)then
+         dtm = pts1*tscls(15)
+         dtr = ABS(age)
+      elseif(kw.le.1)then
          dtm = pts1*tm
          dtr = tm - age
       elseif(kw.ge.10)then
-C         dtm = 1.0d+02
-         dtm = sqrt(0.1/lum)
+         dtm = sqrt(10.0/lum)
          dtr = dtm
       elseif(kw.eq.2)then
          dtm = pts1*(tscls(1) - tm)
@@ -66,10 +68,7 @@ C         dtm = 1.0d+02
          else
             dtm = pts2*(tscls(11) - age)
          endif
-*     --09/27/13 23:37-lwang-improvements-------------------------------*
-***** Note: dtm did not necessary become small-------------------------**
-         dtm = MIN(dtm,0.005d0)
-*     --09/27/13 23:37-lwang-end----------------------------------------*
+*        dtm = MIN(dtm,0.005d0)
          dtr = tn - age
       elseif(kw.eq.7)then
          dtm = pts1*tm
@@ -102,7 +101,7 @@ C         dtm = 1.0d+02
          CALL hrdiag(M0,AGE,M1,TM,TN,TSCLS,LUMS,GB,ZPARS,
      &               RM,LUM,KW,MC1,RCC,MENV,RENV,K2)
          dr = rm - rm0
-         if(ABS(dr).gt.0.1*rm0)then
+         if(ABS(dr).gt.0.1*rm0.and.kw.lt.10)then
             dtm = dtr - age0*eps
             dtdr = dtm/ABS(dr)
             dtm = alpha2*MAX(rm,rm0)*dtdr
@@ -124,9 +123,10 @@ C         dtm = 1.0d+02
       dr = rm - rm0
       it = it + 1
       if(it.eq.20.and.kw.eq.4) goto 30
+      if(kw.ne.kw0.and.kw.ge.13) goto 30
       IF(IT.GT.30)THEN
-         if(rank.eq.0) WRITE (6,22) IT, KSTAR(I), M0, DR, RM0
-   22    FORMAT (' DANGER!    TRDOT: IT K* M0 DR RM0 ',2I4,1P,3E10.2)
+         if (rank.eq.0) WRITE (6,22) IT, KSTAR(I), M0, DR, RM
+   22    FORMAT (' DANGER!    TRDOT: IT K* M0 DR RM ',2I4,1P,3E10.2)
          goto 30
       ENDIF
       if(ABS(dr).gt.0.1*rm0)then
@@ -137,6 +137,17 @@ C         dtm = 1.0d+02
       endif
 *
  30   continue
+*
+* Ensure that change of type has not occurred during radius check. 
+* This is rare but may occur for HG stars of ZAMS mass > 50 Msun 
+* or some cases at the upper end of the mass range for EC SNe. 
+*
+         if(kw.ne.kw0)then
+            kw = kw0
+            m0 = body0(i)*zmbar
+            m1 = m10
+            CALL star(kw,m0,m1,tm,tn,tscls,lums,GB,zpars)
+         endif
 *
 *       Impose a lower limit and convert time interval to scaled units.
       DTM = MAX(DTM,1.0D-04)/TSTAR

@@ -26,6 +26,13 @@
           I2 = J1
       ENDIF
 *
+*       Switch to #I2 if #I1 is a BH (standard case not affected).
+      IF (KSTAR(I1).EQ.14.AND.KZ(43).GE.2) THEN
+          II = I1
+          I1 = I2
+          I2 = II
+      END IF
+      
 *       Update the stars to latest previous time.
       TEV1 = MAX(TEV0(I1),TEV0(I2))
 *

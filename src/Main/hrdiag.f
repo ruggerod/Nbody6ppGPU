@@ -19,19 +19,25 @@
 *       to include from Z=0.0001 to Z=0.03, convective overshooting,
 *       MS hook and more elaborate CHeB.
 *
+*       Revised 21st January 2011 by A. D. Railton
+*       to include pre-mainsequence evolution for 0.1-8.0 Msun
+*       with solar metallicity. Note KW=-1 for preMS evolution.
+*       Use negative aj for preMS.
+*
       implicit none
 *
       integer kw,kwp
       integer wdflag,nsflag
-      parameter(wdflag=1,nsflag=1)
-      common /fall/fallback
+      parameter(wdflag=1,nsflag=2)
+      integer ecflag
+      parameter (ecflag=1)
 *
       real*8 mass,aj,mt,tm,tn,tscls(20),lums(10),GB(10),zpars(20)
-      real*8 r,lum,mc,rc,menv,renv,k2,fallback
+      real*8 r,lum,mc,rc,menv,renv,k2
       real*8 mch,mlp,tiny
       parameter(mch=1.44d0,mlp=12.d0,tiny=1.0d-14)
       real*8 mxns,mxns0,mxns1
-      parameter(mxns0=1.8d0,mxns1=3.d0)
+      parameter(mxns0=1.8d0,mxns1=2.5d0)
       real*8 mass0,mt0,mtc
 * 
       real*8 thook,thg,tbagb,tau,tloop,taul,tauh,tau1,tau2,dtau,texp
@@ -41,6 +47,8 @@
       real*8 mcmax,mcx,mcy,mcbagb,lambda
       real*8 am,xx,fac,rdgen,mew,lum0,kap,zeta,ahe,aco
       parameter(lum0=7.0d+04,kap=-0.5d0,ahe=4.d0,aco=16.d0)
+*
+      real*8 tprems,pre1,pre2,pre3,pre4
 *
       real*8 thookf,tblf
       real*8 lalphf,lbetaf,lnetaf,lhookf,lgbtf,lmcgbf,lzhef,lpertf
@@ -66,20 +74,18 @@
 *       ZPARS   Parameters for distinguishing various mass intervals.
 *       R       Stellar radius in solar units.
 *       TE      Effective temperature (suppressed).
-*       KW      Classification type (0 - 15).
+*       KW      Classification type (-1 -> 15).
 *       MC      Core mass.
-*       fallback Belczynski's Prescription for fallback on black holes
 *       ---------------------------------------------------------------------
 *
-      fallback = 0.d0
 * Set maximum NS mass depending on which NS mass prescription is used. 
       mxns = mxns0
-      if(nsflag.eq.1) mxns = mxns1
+      if(nsflag.ge.1) mxns = mxns1
 *
       mass0 = mass
-      if(mass0.gt.100.d0) mass = 100.d0
+*     if(mass0.gt.100.d0) mass = 100.d0
       mt0 = mt
-      if(mt0.gt.100.d0) mt = 100.d0
+*     if(mt0.gt.100.d0) mt = 100.d0
 *
 * Make evolutionary changes to stars that have not reached KW > 5.
 *
@@ -91,7 +97,62 @@
       rzams = rzamsf(mass)
       rtms = rtmsf(mass)
 *
-      if(aj.lt.tscls(1))then
+      if(aj.ge.0.d0.and.kw.eq.-1)then
+         if(mass.le.0.7d0)then
+            kw = 0
+         else
+            kw = 1
+         endif
+      endif
+*
+      if(aj.lt.0.d0)then
+*
+*        PreMS evolution (valid for 0.1<=M<=8.0).
+*
+         kw = -1
+         tprems = -1.d0*aj/tscls(15)
+* Note: tprems cannot exceed 1 - if it does, start at top of Hayashi track.
+         if(tprems.gt.1.d0)then
+            tprems = 1.d0
+         endif
+*
+         if(mass.le.1.d0)then
+            pre1 = 0.d0
+            pre2 = 0.d0
+            pre3 = 7.432d-02 - 9.43d-02*mass + 7.439d-02*mass**2
+         endif
+         if(mass.gt.1.d0.and.mass.lt.2.d0)then
+            pre1 = -4.00772d0 + 4.00772d0*mass
+            pre2 = 8.5656d0 - 8.5656d0*mass
+            pre3 = -4.50678d0 + 4.56118d0*mass
+         endif
+         if(mass.ge.2.d0)then
+            pre1 = 1.60324d0 + 2.20401d0*mass - 0.60433d0*mass**2 +
+     &         5.172d-02*mass**3
+            pre2 = -4.56878d0 - 4.05305d0*mass + 1.24575*mass**2 -
+     &         0.10922d0*mass**3
+            pre3 = 3.01153 + 1.85745*mass -0.64290d0*mass**2 +
+     &         5.759d-02*mass**3
+         endif
+*
+         rzams = rzamsf(mass)
+         r = rzams*10.d0**((pre1*tprems**3 + pre2*tprems**4 +
+     &     pre3*tprems**5)/(1.05d0-tprems))
+*
+         pre1 = -2.63181d0 + 3.16607d0*mass - 3.30223d0*mass**2 +
+     &     0.83556d0*mass**3 - 0.06356d0*mass**4
+         pre2 = -11.70230d0 + 16.60510d0*mass - 9.69755d0*mass**2 +
+     &     2.42426d0*mass**3 - 0.27213d0*mass**4 + 0.01134d0*mass**5
+         pre3 = 26.19360d0 - 35.09590d0*mass + 20.64280d0*mass**2 -
+     &     5.18601d0*mass**3 + 0.58360d0*mass**4 - 0.02434d0*mass**5
+         pre4 = -14.64590d0 + 18.55660d0*mass - 10.95070d0*mass**2 +
+     &     2.75979d0*mass**3 - 0.31103d0*mass**4 + 0.01298d0*mass**5
+*
+         lum = lums(1)*10.d0**((exp(pre1*tprems**2) - 1.d0)*
+     &     (pre2*tprems + pre3*tprems**2 + pre4*tprems**3)/
+     &     (1.05d0-tprems))
+*
+      elseif(aj.lt.tscls(1))then
 *
 *        Either on MS or HG
 *
@@ -266,7 +327,7 @@
             mcx = mcgbf(lums(4),GB,lums(6))
          else
             mcx = mcheif(mass,zpars(2),zpars(10))
-         end if
+         endif
          tau = (aj - tscls(2))/tscls(3)
          mc = mcx + (mcagbf(mass) - mcx)*tau
 *
@@ -384,7 +445,7 @@
 *
          mcbagb = mcagbf(mass)
          mcx = mcgbtf(tbagb,GB(8),GB,tscls(7),tscls(8),tscls(9))
-         mcmax = MAX(MAX(mch,0.773d0*mcbagb-0.35d0),1.05d0*mcx)
+         mcmax = MAX(MAX(mch,0.773d0*mcbagb-0.35d0),1.02d0*mcx)
 *
          if(aj.lt.tscls(13))then
             mcx = mcgbtf(aj,GB(8),GB,tscls(7),tscls(8),tscls(9))
@@ -416,14 +477,13 @@
          else
             kw = 6
 *
-* This next is a brute force fix to allow negative epochs to work
-* for SAGB stars (Jarrod, 2014)
+* Guard against age going out of range for a slightly negative epoch. 
+            if(aj.ge.tscls(11)-2.d0*tiny) aj = tscls(14) +
+     &                                    0.95d0*(tscls(11)-tscls(14))
 *
-            if(aj.ge.tscls(11)-2.d0*tiny) aj = tscls(14) + 
-     &           0.95d0*(tscls(11)-tscls(14))
             mc = mcgbtf(aj,GB(2),GB,tscls(10),tscls(11),tscls(12))
             lum = lmcgbf(mc,GB)
-*            
+*
 * Approximate 3rd Dredge-up on AGB by limiting Mc.
 *
             lambda = MIN(0.9d0,0.3d0+0.001d0*mass**5)
@@ -469,27 +529,59 @@
                   lum = 1.0d-10
                   r = 1.0d-10
                else
-                  if(nsflag.eq.0)then
+                  if(nsflag.le.0)then
+* Use the original SSE NS/BH mass.
                      mt = 1.17d0 + 0.09d0*mc
-                  elseif(nsflag.ge.1)then
-*
-* Use NS/BH mass given by Belczynski et al. 2002, ApJ, 572, 407.
-*
+                  elseif(nsflag.eq.1)then
+* Use FeNi core mass given by Belczynski et al. 2002, ApJ, 572, 407.
                      if(mc.lt.2.5d0)then
                         mcx = 0.161767d0*mc + 1.067055d0
                      else
                         mcx = 0.314154d0*mc + 0.686088d0
                      endif
+                  elseif(nsflag.eq.2)then
+* Use FeNi mass given by Belczynski et al. 2008, ApJSS, 174, 223. 
+                     if(mc.lt.4.82d0)then
+                        mcx = 1.5d0
+                     elseif(mc.lt.6.31d0)then
+                        mcx = 2.11d0
+                     elseif(mc.lt.6.75d0)then
+                        mcx = 0.69255d0*mc - 2.26d0
+                     else
+                        mcx = 0.37d0*mc - 0.0828d0
+                     endif
+                  elseif(nsflag.ge.3)then
+* Use remnant masses based on Eldridge & Tout 2004, MNRAS, 353, 87.
+                     if(mc.lt.6.d0)then
+                        mcx = 1.44d0
+                     else
+                        mcx = 1.4512017d0*mc - 6.5913737d-03*mc*mc
+     &                        - 6.1073371d0
+                     endif
+                     mt = mcx
+                  endif
+                  if(nsflag.eq.1.or.nsflag.eq.2)then
+* For Belczynski methods calculate the remnant mass from the FeNi core. 
                      if(mc.le.5.d0)then
                         mt = mcx
-                        fallback = 0.d0
                      elseif(mc.lt.7.6d0)then
                         mt = mcx + (mc - 5.d0)*(mt - mcx)/2.6d0
-                        fallback = (mc - 5.d0)/2.6d0
                      endif
-                     if(mc.gt.7.60) fallback = 1.d0
+                  endif
+                  if(nsflag.ge.2)then
+* Reduce the mass to the gravitational mass for the relevant cases. 
+                     mcx = (-1.d0 + SQRT(1.d0 + 0.3d0*mt))/0.15d0
+                     if(mcx.le.mxns)then
+                        mt = mcx
+                     elseif(mcx.le.mxns+1.0d0)then
+                        mc = 1.d0/(0.075d0*mxns + 1.d0)
+                        mt = (0.9d0 - (mxns+1.d0-mcx)*(0.9d0-mc))*mt
+                     else
+                        mt = 0.9d0*mt
+                     endif
                   endif
                   mc = mt
+*
                   if(mt.le.mxns)then
 *
 * Zero-age Neutron star
@@ -500,8 +592,17 @@
 * Zero-age Black hole
 *
                      kw = 14
-*       print*,' HRDIAG BH mc, mt, mxns, fallback ',mc,mt,mxns,fallback
                   endif  
+*
+               endif
+            endif
+         else
+* Check for an electron-capture collapse of an ONe core. 
+            if(mcbagb.ge.1.6d0.and.mcbagb.le.2.25d0)then
+               if(ecflag.gt.0.and.mcx.ge.1.372d0)then
+                  mt = 1.26d0
+                  mc = mt
+                  kw = 13
                endif
             endif
          endif
@@ -577,22 +678,50 @@
                      lum = 1.0d-10
                      r = 1.0d-10
                   else
-                     if(nsflag.eq.0)then
+                     if(nsflag.le.0)then
                         mt = 1.17d0 + 0.09d0*mc
-                     elseif(nsflag.ge.1)then
+                     elseif(nsflag.eq.1)then
                         if(mc.lt.2.5d0)then
                            mcx = 0.161767d0*mc + 1.067055d0
                         else
                            mcx = 0.314154d0*mc + 0.686088d0
                         endif
+                     elseif(nsflag.eq.2)then
+                        if(mc.lt.4.82d0)then
+                           mcx = 1.5d0
+                        elseif(mc.lt.6.31d0)then
+                           mcx = 2.11d0
+                        elseif(mc.lt.6.75d0)then
+                           mcx = 0.69255d0*mc - 2.26d0
+                        else
+                           mcx = 0.37d0*mc - 0.0828d0
+                        endif
+                     elseif(nsflag.ge.3)then
+                        if(mc.lt.6.d0)then
+                           mcx = 1.44d0
+                        else
+                           mcx = 1.4512017d0*mc - 6.5913737d-03*mc*mc
+     &                           - 6.1073371d0
+                        endif
+                        mt = mcx
+                     endif
+                     if(nsflag.eq.1.or.nsflag.eq.2)then
                         if(mc.le.5.d0)then
                            mt = mcx
-                           fallback = 0.d0
                         elseif(mc.lt.7.6d0)then
                            mt = mcx + (mc - 5.d0)*(mt - mcx)/2.6d0
-                           fallback = (mc - 5.d0)/2.6d0
                         endif
-                        if(mc.gt.7.60) fallback = 1.d0
+                     endif
+                     if(nsflag.ge.2)then
+                        mcx = (-1.d0 + SQRT(1.d0 + 0.3d0*mt))/0.15d0
+                        if(mcx.le.mxns)then
+                           mt = mcx
+                        elseif(mcx.le.mxns+1.0d0)then
+                           mc = 1.d0/(0.075d0*mxns + 1.d0)
+                           mt = (0.9d0 - (mxns+1.d0-mcx)*(0.9d0-mc))*mt
+                        else
+                           mt = 0.9d0*mt
+                        endif
                      endif
                      mc = mt
                      if(mt.le.mxns)then
@@ -605,7 +734,6 @@
 * Zero-age Black hole
 *
                         kw = 14
-*                     print*,' HRDIAG BH T ',mc,mt,mxns,fallback
                      endif
                   endif  
                endif
@@ -621,11 +749,12 @@
          if(mc.ge.mch.and.kw.eq.12)then
 *
 * Accretion induced supernova with no remnant
-* unless WD is ONe.
+* unless WD is ONe in which case we assume a NS 
+* of minimum mass is the remnant.
 *
             kw = 13
-            mt = 1.3d0
-*           mt = 1.17d0 + 0.09d0*mc
+            aj = 0.d0
+            mt = 1.26d0
          elseif(mc.ge.(mch-0.06d0).and.kw.le.11)then
             kw = 15
             aj = 0.d0
@@ -777,17 +906,17 @@
 * Calculate mass and radius of convective envelope, and envelope
 * gyration radius.
 *
-      if(kw.lt.10)then
+      if(kw.ge.0.and.kw.lt.10)then
          CALL mrenv(kw,mass,mt,mc,lum,r,rc,aj,tm,lums(2),lums(3),
      &              lums(4),rzams,rtms,rg,menv,renv,k2)
       endif
 *
-      if(mass.gt.99.99d0)then
-         mass = mass0
-      endif
-      if(mt.gt.99.99d0)then
-         mt = mt0
-      endif
+*     if(mass.gt.99.99d0)then
+*        mass = mass0
+*     endif
+*     if(mt.gt.99.99d0)then
+*        mt = mt0
+*     endif
 *
       return
       end

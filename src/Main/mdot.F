@@ -76,6 +76,12 @@ c$$$      NCNUM = 0
          END IF
       END DO
       IF (ML0.EQ.0) GO TO 810
+*     consistence check
+      IF (ML0.GE.NMAX) THEN
+          WRITE (6,3)  ML0, TIME
+    3     FORMAT (' DANGER!    MDOT LIMIT   ML T',I5,F8.2)
+          STOP
+      END IF
 
 *     Find global index of next star to be checked (NB! reset KS & IKS).
  4    ML = ML + 1
@@ -88,6 +94,7 @@ c$$$      NCNUM = 0
             GO TO 103
          END IF
       END IF
+*       Consider global index of next star (NB! reset KS & IKS).      
  5    KS = 0
       KSPAIR = 0
       IKS = 0
@@ -118,7 +125,9 @@ c$$$      GO TO 70
 *       Include braking or merger termination at time for Roche overflow.
       IF (I.GT.N.AND.NAME(I).LT.0.AND.KZ(34).GT.0) THEN
           KSPAIR = I - N
-          CALL BRAKE2(KSPAIR,ITERM)
+*       Check spin synchronization of inner binary for small eccentricity.
+          CALL SPINUP(KSPAIR,ITERM)
+          IF (ITERM.EQ.0) CALL BRAKE2(KSPAIR,ITERM)
           IF(ITERM.GT.0)THEN
 C             NWARN = NWARN + 1
 C             IF (rank.eq.0.and.NWARN.LT.1000) THEN
@@ -1646,6 +1655,7 @@ c$$$      IF (TMDOT.LT.TIME) GO TO 1
       ELSE
          GO TO 5
       END IF
+*       Check next member.      
       IF (ML.LT.ML0) GO TO 4
 *
 *       Update any merged circularizing binary using TMDIS.

@@ -188,6 +188,7 @@
          TEV(I1) = TEV(I2)
          SPIN(I1) = SPIN(I2)
          RADIUS(I1) = RADIUS(I2)
+         RADIUS(I2) = 0.0
          NAME2 = NAME(I2)
          NAME(I2) = NAME(I1)
          NAME(I1) = NAME2
@@ -262,6 +263,16 @@ C      CALL DTCHCK(TIME,STEP(I2),DTK(40))
       CALL NBREM(I1,1,NNB)
       JLIST(1) = I1
       JPERT(L2) = J2
+
+*       Check removal of #I1 ghost neighbour if #I2 is first single particle.
+      IF (LIST(2,I1).EQ.I2) THEN
+          DO 21 L = 2,NNB
+              LIST(L,I1) = LIST(L+1,I1)
+   21     CONTINUE
+          NNB = NNB - 1
+          LIST(1,I1) = NNB
+      END IF
+*
 *
 *       Include correction procedure in case of mass loss (cf routine MIX).
       IF (KZ(19).GE.3.AND.DM.GT.0.0) THEN
@@ -333,6 +344,7 @@ C*       remove from NXTLST (In binary, not needed)
    25             CONTINUE
 *       Create ghost for rare case of massless first component.
                   IF (BODY(J).EQ.0.0D0) THEN
+                     IF (J.EQ.I1) THEN
                       DO 26 K = 1,3
                          X0(K,I1) = MIN(1.0d+04 + (X(K,I1)-RDENS(K)),
      &                             1000.d0*RSCALE*(X(K,I1)-RDENS(K))/RI)
@@ -350,7 +362,8 @@ C                      call delay_remove_tlist(I1,STEP,DTK)
                       STEP(I1) = 2*DTK(1)
                       call add_tlist(I1,STEP,DTK)
                       if(rank.eq.0) WRITE (6,28)  NAME(I1), KW1
-   28                 FORMAT (' MASSLESS PRIMARY!    NAM KW ',I8,I4)
+ 28                   FORMAT (' MASSLESS PRIMARY!    NAM KW ',I8,I4)
+                   END IF
                   ELSE
                       CALL FPOLY1(J,J,0)
                       CALL FPOLY2(J,J,0)
@@ -458,6 +471,10 @@ C 50      FORMAT (1X,F7.1,2I6,3I4,3F5.1,2F7.2,F6.1,F7.2,F9.5,1P,E9.1)
       end if
 *
       KSTAR(I1) = KW1
+
+*     Ensure a BH does not get a smaller type (should not happen).
+      IF (KSTAR(I2).EQ.14) KSTAR(I1) = 14
+
       KSTAR(I2) = 15
 *       Specify IPHASE < 0 for new sorting.
       IPHASE = -1
