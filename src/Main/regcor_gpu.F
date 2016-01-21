@@ -300,7 +300,7 @@ C$$$          FDR2 = FDR2 + FDR(K)**2
       L = 2
       LG = 2
 *       Set termination value in NLIST(NNB+2) and save last list member.
-      NLIST(NNB+2) = NTOT + 1
+      NLIST(NNB+2) = NMAX
       NLIST(1) = LIST(NNB0+1,I)
 *
 *       Compare old and new list members in locations L & LG.
@@ -330,7 +330,7 @@ C$$$          FDR2 = FDR2 + FDR(K)**2
           GO TO 56
       ELSE IF (LG.LE.NNB) THEN
           LG = LG + 1
-          LIST(L,I) = NTOT + 1
+          LIST(L,I) = NMAX
 *       Last location of list holds termination value (saved in NLIST(1)).
           GO TO 56
       END IF
