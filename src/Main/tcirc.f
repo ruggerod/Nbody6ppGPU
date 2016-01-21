@@ -136,14 +136,14 @@
 *         ITIME = ITIME + 1
 *     Note possibility of counter exceeding the limit.
 *         IF (ITIME.GT.2000000000) ITIME = 0
-         IF (ICIRC.EQ.0.AND.KZ(27).EQ.2) THEN
-            SEMI = -0.5*BODY(N+IP)/H(IP)
-            if(rank.eq.0)then
-               WRITE (6,20)  I1, NCHAOS, ES0, RP1, M21, TC, SEMI, ZN
- 20            FORMAT (' TCIRC:    I1 NCH E RP M21 TC A n ',
-     &              2I5,F8.4,F8.1,F6.2,1P,2E10.2,0P,F5.1)
-            end if
-         END IF
+*         IF (ICIRC.EQ.0.AND.KZ(27).EQ.2) THEN
+*            SEMI = -0.5*BODY(N+IP)/H(IP)
+*            if(rank.eq.0)then
+*               WRITE (6,20)  I1, NCHAOS, ES0, RP1, M21, TC, SEMI, ZN
+* 20            FORMAT (' TCIRC:    I1 NCH E RP M21 TC A n ',
+*     &              2I5,F8.4,F8.1,F6.2,1P,2E10.2,0P,F5.1)
+*            end if
+*         END IF
          ICIRC = 1
 *     Define Roche search indicator for circularized orbit (ECCM1 > 0.002).
          IF (ES0.LE.ECCM1.AND.KSTAR(N+IP).EQ.0) THEN

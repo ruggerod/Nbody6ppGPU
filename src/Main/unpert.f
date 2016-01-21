@@ -8,8 +8,8 @@
       INCLUDE 'common6.h'
       REAL*8  UI(4),UIDOT(4)
 *     Warning!: saved value is unsafe for parallel
-      SAVE TCALL
-      DATA TCALL /0.0D0/
+*      SAVE TCALL
+*      DATA TCALL /0.0D0/
 *
 *
 *       Set first component & c.m. index and semi-major axis.
@@ -127,14 +127,15 @@ c$$$              call flush(6)
 *
 *       Specify circularization index (skip SPIRAL but include CHAOS).
           ICIRC = 0
-          IF (KZ(27).EQ.1.AND.TTOT.GT.TCALL) THEN
-              IF (RP.LT.RT) ICIRC = 1
-              TCALL = TTOT + 0.01
-          ELSE IF (RP.LT.2.5*RT.AND.KSTAR(I).EQ.0.AND.
-     &        TTOT.GT.TCALL) THEN
+          IF (DMOD(TTOT,DTK(4)).EQ.0.0D0) THEN
+             IF (KZ(27).EQ.1) THEN
+                IF (RP.LT.RT) ICIRC = 1
+C               TCALL = TTOT + 0.01
+             ELSE IF (RP.LT.2.5*RT.AND.KSTAR(I).EQ.0) THEN
 *       Perform occasional checks of TC (NB! small periods).
-              CALL TCIRC(RP,ECC,I1,I1+1,ICIRC,TC)
-              TCALL = TTOT + 0.01
+                CALL TCIRC(RP,ECC,I1,I1+1,ICIRC,TC)
+C               TCALL = TTOT + 0.01
+             END IF
           ELSE IF (KSTAR(I).EQ.-1) THEN
               ICIRC = 1
           END IF
