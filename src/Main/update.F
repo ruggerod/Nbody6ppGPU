@@ -364,7 +364,7 @@ c$$$         END IF
  125  IF (LISTV(L).EQ.IPAIRCM) THEN
 *     Remove old c.m.
          LISTV(L) = LISTV(NNB+1)
-         LISTV(1) = LISTV(1) - 1
+         IF(LISTV(1).GT.0) LISTV(1) = LISTV(1) - 1
          GO TO 130
       END IF
 *     Replace ilast c.m. to new position (ipair c.m.)

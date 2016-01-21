@@ -241,7 +241,13 @@
 !$omp end critical 
 *
 *       Check list of high velocity intruders for early retention.
-  350 IF (LISTV(1).EQ.0.OR.ICM.EQ.-1) GO TO 355
+ 350  IF (LISTV(1).EQ.0.OR.ICM.EQ.-1) GO TO 355
+*     Safety check
+      IF (LISTV(1).LT.0) then
+         write(6,*) 'Error ! High velocity particle list number',
+     &        ' less than zero (LISTV(1)=',LISTV(1)
+         call abort()
+      END IF
       L = 2
   351 J = LISTV(L)
       IF (J.EQ.I) GO TO 354
