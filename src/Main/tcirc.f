@@ -20,8 +20,8 @@
      &     -2.314374,-4.127795/
       DATA  ECCM,ECCM1 /0.002,0.002001/
 *     for diagnostics, safe for parallel
-      SAVE ITIME
-      DATA ITIME /0/
+*      SAVE ITIME
+*      DATA ITIME /0/
 *     
 *     
 *     Set large circularization time for merged binary.
@@ -133,10 +133,10 @@
 *     Activate tidal indicator if TC < 2x10**9 yrs or hyperbolic orbit.
       IF (TC.LT.2000.0.OR.ES0.GT.1.0) THEN
          IP = KVEC(I1)
-         ITIME = ITIME + 1
+*         ITIME = ITIME + 1
 *     Note possibility of counter exceeding the limit.
-         IF (ITIME.GT.2000000000) ITIME = 0
-         IF (ICIRC.EQ.0.AND.KZ(27).EQ.2.AND.ITIME.LT.100) THEN
+*         IF (ITIME.GT.2000000000) ITIME = 0
+         IF (ICIRC.EQ.0.AND.KZ(27).EQ.2) THEN
             SEMI = -0.5*BODY(N+IP)/H(IP)
             if(rank.eq.0)then
                WRITE (6,20)  I1, NCHAOS, ES0, RP1, M21, TC, SEMI, ZN

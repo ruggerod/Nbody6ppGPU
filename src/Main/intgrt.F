@@ -304,6 +304,14 @@ C         IF(J.EQ.9951) print*,'L',L,'J',J,'T',TIME
          stop
       end if
       if(time.ge.adtime) then
+         print*,'NXTLEN',NXTLEN,'T',TTOT,'STEP',STEP(NXTLST(1)),
+     &        'N',NAME(NXTLST(1)),NAME(NXTLST(2))
+         II1 = NXTLST(1)
+         II2 = NXTLST(2)
+         print*,'RIJ',SQRT((X0(1,II1)-X0(1,II2))**2+
+     &        (X0(2,II1)-X0(2,II2))**2+
+     &        (X0(3,II1)-X0(3,II2))**2),
+     &        sqrt(X0(1,II1)**2+X0(2,II1)**2+x0(3,II1)**2)
          call adjust
          call flush(6)
 #ifdef PARALLEL

@@ -304,10 +304,10 @@ c$$$          end if
           IF (PMIN.GT.0.6*RSTAB.AND.PMIN.LT.0.9*RSTAB) GO TO 100
 *       Delay for large distance ratio outside 0.5*RMIN.
           IF (RIJ.GT.MAX(10.0*APO,0.5*RMIN)) GO TO 100
-          IF (RIJ.GT.10.0*APO) GO TO 100
+C          IF (RIJ.GT.10.0*APO) GO TO 100
           IF (PMIN.GT.2.5*APO) GO TO 40
       END IF
-      IF (PMIN.GT.3.0*SEMI.AND.JCOMP.LE.N) GO TO 40
+C      IF (PMIN.GT.3.0*SEMI.AND.JCOMP.LE.N) GO TO 40
 *
       IF (JCOMP.GT.N) THEN
           IF (RIJ.GT.10.0*APO) GO TO 100
