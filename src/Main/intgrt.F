@@ -543,10 +543,13 @@ C        if (TCCT.gt.2.0) stop
          CALL NBINT(TIME,NXTLEN,NXTLST,X,XDOT,BODY,FIRR_SIMD,FD_SIMD,
      &        LIST,IMINR_TMP)
 #endif
+*     Same the smallest time step
+         DSTMIN=STEP(NXTLST(1))
+         
 !$omp parallel do if(NXTLEN.GE.ITHREAD) private(L,I)
          DO L = 1,NXTLEN
             I = NXTLST(L)
-            CALL NBINT_COR(I,FIRR_SIMD(1,L),FD_SIMD(1,L))
+            CALL NBINT_COR(I,FIRR_SIMD(1,L),FD_SIMD(1,L),DSTMIN)
          END DO
 !$omp end parallel do
 
@@ -1296,7 +1299,7 @@ c$$$ 1022 continue
 
 *     Output of Massive black hole data
       IF (KZ(24).EQ.1) then
-         call BHPLOT
+         call BHPLOT(NXTLEN,NXTLST)
       END IF
 c$$$*     --10/27/13 10:33-lwang-add----------------------------------------*
 c$$$***** if ks need terminate, do prediction for icomp and jcomp-----------*

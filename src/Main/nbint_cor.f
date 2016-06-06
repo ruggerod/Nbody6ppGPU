@@ -1,4 +1,4 @@
-      SUBROUTINE NBINT_COR(I,FIRR,FD)
+      SUBROUTINE NBINT_COR(I,FIRR,FD,DSTMIN)
 *
 *
 *       Irregular corrector for SIMD version
@@ -9,7 +9,7 @@
       COMMON/CHAINC/  XC(3,NCMAX),UC(3,NCMAX),BODYC(NCMAX),ICH,
      &                LISTC(LMAX)
       COMMON/NEWXV/ XN(3,NMAX),XNDOT(3,NMAX)
-      REAL*8  XI(3),XIDOT(3),FIRR(3),FREG(3),FD(3),FDUM(3)
+      REAL*8  XI(3),XIDOT(3),FIRR(3),FREG(3),FD(3),FDUM(3),DSTMIN
 *      LOGICAL RPRED(NMAX)
 *
 *       Obtain irregular force & first derivative.
@@ -240,6 +240,10 @@ c$$$         end do
           TTMP = STEP(I)
       END IF
 *
+      IF (KZ(24).eq.1.and.BODY(I).GE.BIMBH) then
+         TTMP = DSTMIN
+      END IF
+      
       STEP(I) = TTMP
 *
 *     --03/30/13 22:34-lwang-debug--------------------------------------*

@@ -1,4 +1,4 @@
-      SUBROUTINE BHPLOT
+      SUBROUTINE BHPLOT(NXTLEN,NXTLST)
 *
 *
 *       Black hole plotting data.
@@ -26,7 +26,7 @@ C      TBH = 8.25
       IF (TBH.GT.TIME+TOFF) RETURN
 *     
 *     Output labels
-      IF(IBH.EQ.-1.and.KSTART.EQ.1.and.rank.eq.0) then
+      IF (IBH.EQ.-1.and.KSTART.EQ.1.and.rank.eq.0) then
          write(45,*)'     STAT         Time[Myr]                 IBH',
      &        '         X(1)[PC]                   X(2)[PC]        ',
      &        '         X(3)[PC]                  V(1)[km/s]       ',

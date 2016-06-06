@@ -160,7 +160,7 @@
           end if
 *
 *       Find massive back hole after restart
-          IF (KZ(24).EQ.1) call IMBHRESTART
+C          IF (KZ(24).EQ.1) call IMBHRESTART
 
       END IF
 *
