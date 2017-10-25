@@ -160,24 +160,24 @@ c$$$     &        'step',step(i),'dt0',dt0,'t',time,'x',xi(1),'xd',xidot(1),
 c$$$     *        'nb',list(1,i),'step',step(i)
 c$$$         call flush(6)
 c$$$      end if
-      if(dt0.le.0.1*step(i)) then
-         write(6,81) rank,I,name(i),DT0/STEP(I),dt0,step(i),stepr(i),
-     &        FI(1,i),FIDOT(1,i),D2(1,i),D3(1,i),time,t0(i),t0r(i),
-     &        LIST(1,I),LIST(2,I),NAME(LIST(2,I))
-         call flush(6)
- 81      format(I3,' Warning!: Irregular step jumping! I',I7,' N',I7,
-     &        ' ratio',E10.3,' dt0',F20.17,' step',F20.17,
-     &        ' stepr',F20.17,' FI',E12.5,
-     &        ' FD',E12.5,' D2',E12.5,' D3',E12.5,' t',F21.17,
-     &        ' t0',F21.17,' t0r',F21.17,
-     &        ' NB',I4,' LIST1',I7,' N1',I7)
+c$$$      if(dt0.le.0.1*step(i)) then
+c$$$         write(6,81) rank,I,name(i),DT0/STEP(I),dt0,step(i),stepr(i),
+c$$$     &        FI(1,i),FIDOT(1,i),D2(1,i),D3(1,i),time,t0(i),t0r(i),
+c$$$     &        LIST(1,I),LIST(2,I),NAME(LIST(2,I))
+c$$$         call flush(6)
+c$$$ 81      format(I3,' Warning!: Irregular step jumping! I',I7,' N',I7,
+c$$$     &        ' ratio',E10.3,' dt0',F20.17,' step',F20.17,
+c$$$     &        ' stepr',F20.17,' FI',E12.5,
+c$$$     &        ' FD',E12.5,' D2',E12.5,' D3',E12.5,' t',F21.17,
+c$$$     &        ' t0',F21.17,' t0r',F21.17,
+c$$$     &        ' NB',I4,' LIST1',I7,' N1',I7)
 c$$$         if(name(i).eq.1155) stop
 c$$$         print*,'N',N,'BODY',BODY(I)
 c$$$         do k =2,LIST(1,I)+1
 c$$$            kk =LIST(K,I)
 c$$$            print*, 'I',KK,'N',NAME(KK),'STEP',STEP(KK),'M',BODY(KK)
 c$$$         end do
-      end if
+c$$$      end if
 *     --03/03/14 20:29-lwang-end----------------------------------------*
 *
 *       Suggestion due to Winston Sweatman

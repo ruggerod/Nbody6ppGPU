@@ -736,15 +736,15 @@ c$$$      END IF
 *
 *     --11/04/13 23:10-lwang-debug--------------------------------------*
 ***** Note:------------------------------------------------------------**
-      if (stepr(i).ge.1E2*dt0) then
-         print*,rank,'Warning!: Regular step jump!: I',I,'N',name(i),
-     &        'FI',Fi(1,i),'FD',Fidot(1,i),'Freg',Freg(1),'FDR',FDR(1),
-     &        'ratio',dt0/stepr(i),'dt0',dt0,'stepr ',stepr(i),
-     &        't',TIME,'NNB',NNB
-         call flush(6)
+c$$$      if (stepr(i).ge.1E2*dt0) then
+c$$$         print*,rank,'Warning!: Regular step jump!: I',I,'N',name(i),
+c$$$     &        'FI',Fi(1,i),'FD',Fidot(1,i),'Freg',Freg(1),'FDR',FDR(1),
+c$$$     &        'ratio',dt0/stepr(i),'dt0',dt0,'stepr ',stepr(i),
+c$$$     &        't',TIME,'NNB',NNB
+c$$$         call flush(6)
 c$$$         print*,'NNB',NNB,'LIST',(NAME(LIST(K,I)),K=2,NNB+1)
 c$$$         IF(NAME(i).EQ.1674) stop
-      end if
+c$$$      end if
 c$$$      if(name(i).eq.1674) then
 c$$$         print*,rank,'I',I,'N',name(i),'firr',fi(1,i),'fd',fidot(1,i),
 c$$$     &        'freg',freg(1),'fdr',fdr(1),
