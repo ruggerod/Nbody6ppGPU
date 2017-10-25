@@ -194,7 +194,7 @@ $RECYCLE.BIN/
 *.egg
 *.egg-info
 dist/
-#build/
+build/
 eggs/
 parts/
 var/
@@ -216,3 +216,9 @@ pip-log.txt
 .mr.developer.cfg
 
 .svn*
+
+## RdV utilities
+spartan_configure.sh
+Makefile
+config.status
+include/params.h
