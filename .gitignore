@@ -222,4 +222,3 @@ spartan_configure.sh
 Makefile
 config.status
 include/params.h
-run/
