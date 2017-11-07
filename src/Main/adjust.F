@@ -377,6 +377,10 @@ c$$$     &        EBIN,EMERGE
 *     Save COMMON after energy check (skip TRIPLE, QUAD, CHAIN).
       TDUMP = TIME
       IF (KZ(2).GE.1.AND.NSUB.EQ.0) CALL MYDUMP(1,2)
+!     MMadd sequential dump
+      IF(MOD(INT(TTOT),10).EQ.0) THEN
+         IF (KZ(2).GE.1.AND.NSUB.EQ.0) CALL MYDUMP(1,INT(TTOT+1000000))
+      ENDIF
 *     
 *     Check termination criteria (TIME > TCRIT & N <= NCRIT).
 *     
