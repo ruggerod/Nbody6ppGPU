@@ -11,7 +11,7 @@
       SAVE  IPAIR, KC, VDIS, RI
       DATA  IPAIR,KC /0,0/
 *       Reinstall the traditional kicks (March 2012)
-      PARAMETER (VFAC=-1.0D0)
+      PARAMETER (VFAC=2.5D0)
 *       Get fallback from hrdiag.f
 *     Safe for parallel
       common /fall/fallback
@@ -102,11 +102,11 @@ C          VP2 = 2.0*BODY(N+IPAIR)/R(IPAIR)
 *     IF (FAC.LT.RAN2(IDUM1).AND.IT.LT.10) GO TO 2
 *     VKICK = V0*VT
 *
-C*       Adopt the Maxwellian of Hansen & Phinney (MNRAS 291, 569, 1997).
-C      DISP = 190.0
+*       Adopt the Maxwellian of Hansen & Phinney (MNRAS 291, 569, 1997).
+      DISP = 190.0
 *
 *       Adopt the Maxwellian of Hobbs (MNRAS 360, 974, 2005)
-      DISP = 265.0
+C      DISP = 265.0
 *
 *       Include velocity dispersion in terms of VSTAR (Parameter statement!).
       IF (VFAC.GT.0.0D0) THEN
