@@ -182,7 +182,7 @@ c$$$      end if
          RMIN0 = RMIN
 *     
 *     Form close encounter distance from scale factor & density contrast.
-         RMIN = 4.0*RSCALE/(FLOAT(N)*RHOD**0.3333)
+         RMIN = 4.0*RSCALE/(FLOAT(N)*MIN(RHOD,3.0D0)**0.333) !! MTadd modified for IMBH
 *     Use harmonic mean to reduce fluctuations (avoid initial value).
          IF (TIME.GT.0.0D0) RMIN = SQRT(RMIN0*RMIN)
 *     Impose maximum value for sufficient perturbers.
