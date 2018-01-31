@@ -3,18 +3,35 @@
 *
 *       Velocity kick for WD, neutron stars or black holes.
 *       ---------------------------------------------------
+* For regular NSs the kick choice is controlled by the value of 
+* VFAC. Choices are: 
+*    VFAC = 0.0 - no kick
+*    VFAC > 0.0 - kick drawn from a Maxwellian with dispersion VFAC*VSTAR. 
+*
+* For BHs the kick choice is controlled by the value of BHFLAG.  
+* Choices are: 
+*    BHFLAG = 0 - no kick
+*    BHFLAG = 1 - same as for the regular NSs
+*    BHFLAG = 2 - same as for the regular NSs but scaled by fallback. 
+*
+* Small kicks for WDs can also be set if KZ(25) > 0 in the input file.
 *
       Include 'kspars.h'
       INCLUDE 'common6.h'
+      INTEGER BHFLAG
       REAL*8  RAN2,VK(4)
+      REAL*8  DISP,VFAC
 *     Unsafe for parallel
       SAVE  IPAIR, KC, VDIS, RI
       DATA  IPAIR,KC /0,0/
-*       Reinstall the traditional kicks (March 2012)
-      PARAMETER (VFAC=2.5D0)
-*       Get fallback from hrdiag.f
+
+*     Get fallback from hrdiag.f
 *     Safe for parallel
       common /fall/fallback
+
+*     Set Parameters
+      VFAC = 2.5D0
+      BHFLAG = 2
 *
 *     --03/07/14 11:30-lwang-ks-parallel--------------------------------*
 ***** Note: Here when icase eq. -147 means for ks communication
@@ -103,17 +120,15 @@ C          VP2 = 2.0*BODY(N+IPAIR)/R(IPAIR)
 *     VKICK = V0*VT
 *
 *       Adopt the Maxwellian of Hansen & Phinney (MNRAS 291, 569, 1997).
-      DISP = 190.0
+C       DISP = 190.0
 *
 *       Adopt the Maxwellian of Hobbs (MNRAS 360, 974, 2005)
 C      DISP = 265.0
 *
-*       Include velocity dispersion in terms of VSTAR (Parameter statement!).
-      IF (VFAC.GT.0.0D0) THEN
-          DISP = VFAC*VSTAR
-      END IF
+*     Include velocity dispersion in terms of VSTAR (Parameter statement!)
+      DISP = VFAC*VSTAR
 *
-*       Allow for optional type-dependent WD kick.
+*     Allow for optional type-dependent WD kick.
       IF (KW.LT.13) THEN
           IF (KZ(25).EQ.1.AND.(KW.EQ.10.OR.KW.EQ.11)) THEN
               DISP = 5.0
@@ -123,6 +138,9 @@ C      DISP = 265.0
               DISP = 0.0
           END IF
       END IF
+
+*     Allow for optional BH kick.
+      IF(KW.EQ.14.AND.BHFLAG.EQ.0) DISP = 0.D0
 *
 *       Use Henon's method for pairwise components (Douglas Heggie 22/5/97).
       DO 2 K = 1,2
@@ -136,7 +154,9 @@ C      DISP = 265.0
     2 CONTINUE
       VKICK = SQRT(VK(1)**2 + VK(2)**2 + VK(3)**2)
       VK(4) = VKICK
-      IF(KW.EQ.14) VKICK = VKICK*(1.D0-fallback)
+
+*     Optionally, restrict the BH kick velocity by fallback.  (hrdiag.f)
+      IF(KW.EQ.14.AND.BHFLAG.GT.1) VKICK = VKICK*(1.D0-fallback)
 *
 *       Limit kick velocity to VDIS+10*VSTAR/10*VST for binary/single stars.
 C      IF (IPAIR.GT.0) THEN
@@ -144,12 +164,14 @@ C          VBF = SQRT(VDIS**2 + 100.0*VSTAR**2)
 C          VKICK = MIN(VKICK,VBF)
 C      ELSE
 C          VKICK = MIN(VKICK,10.0D0*VSTAR)
-*       Ensure escape of massless star.
+
+*     Ensure escape of massless star.
       IF (IPAIR.LE.0.AND.BODY(I).EQ.0.0D0) VKICK = 10.0*VSTAR
 C      END IF
       VKICK = VKICK/VSTAR
-*
-      IF (VKICK.EQ.0.0) GO TO 30
+
+*       Skip case of zero kick velocity.
+      IF (VKICK.EQ.0.0D0.OR.DISP.EQ.0.0D0)  GO TO 30
 *
 *       Randomize the velocity components.
 *     A(4) = 0.0
